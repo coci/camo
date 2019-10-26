@@ -20,4 +20,3 @@ class Wallet(models.Model):
 
 	def __str__(self):
 		return f'{self.user} has {self.type} with this amount : {self.amount}'
- 
