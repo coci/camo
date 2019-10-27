@@ -5,9 +5,17 @@ from enum import Enum
 from camo import settings
 
 
+class ExpenseCategory(Enum):
+	food = 'خوراک'
+	cloth = 'پوشاک'
+	transportation = 'حمل و نقل'
+	entertainment = 'تفریح'
+	other = 'متفرقه'
+
+
 class IncomeCategory(Enum):
-	expense = 'expense'
-	income = 'income'
+	salary = 'حقوق'
+	other = 'متفرقه'
 
 
 def factor(instance, filename):
@@ -31,3 +39,19 @@ class Income(models.Model):
 
 	def __str__(self):
 		return f'{self.user} has income with this amount : {self.amount}'
+
+
+class Expense(models.Model):
+	user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+	amount = models.IntegerField()
+	description = models.TextField()
+	date = models.DateField()
+	category = models.CharField(
+		max_length=100,
+		choices=[(ExpenseCategory.name, ExpenseCategory.value) for ExpenseCategory in ExpenseCategory],
+		null=True,
+		blank=True
+	)
+
+	def __str__(self):
+		return f'{self.user} has expense with this amount : {self.amount}'
