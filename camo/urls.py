@@ -20,6 +20,7 @@ from rest_framework.authtoken import views
 urlpatterns = [
 	path('admin/', admin.site.urls),
 	path('api/v1/user/', include('users.urls')),
-	path('api/v1/get-token/', views.obtain_auth_token),  # user can obtain token by giving username and pass
+	path('api/v1/login/', views.obtain_auth_token),  # user can obtain token by giving username and pass
 	path('api/v1/wallet/', include('wallet.urls')),
+	path('api/v1/report/', include('report.urls')),
 ]
