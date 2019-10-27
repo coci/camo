@@ -5,7 +5,8 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from .models import Wallet, RequestType
+from .models import Income, IncomeCategory, ExpenseCategory, Expense
+from camo.date import gregorian_to_jalali, jalali_to_gregorian
 
 
 class SubmitIncome(APIView):
@@ -15,7 +16,7 @@ class SubmitIncome(APIView):
 		amount = None if not request.POST.get('amount') else request.POST.get('amount')
 		description = None if not request.POST.get('description') else request.POST.get('description')
 		date = None if not request.POST.get('date') else request.POST.get('date')
-
+		category = None if not request.POST.get('category') else request.POST.get('category')
 		# check amount is not empty
 		if not amount:
 			content = {
@@ -30,17 +31,19 @@ class SubmitIncome(APIView):
 		if not date:
 			date = str(dt.datetime.now().date())  # if date is empty its set to today
 
-		# validate date value
-		try:
-			dt.datetime.strptime(date, "%Y-%m-%d").strftime('%Y-%m-%d')
-		except ValueError:
-			content = {
-				'status': 'error',
-				'detail': {
-					'message': 'Date must be in format : yyyy-mm-dd'
+		else:
+			try:
+				date = jalali_to_gregorian(date)
+			except ValueError:
+				content = {
+					'status': 'error',
+					'detail': {
+						'message': 'Date must be in format : yyyy-mm-dd'
+					}
 				}
-			}
-			return Response(content, status=status.HTTP_400_BAD_REQUEST)
+				return Response(content, status=status.HTTP_400_BAD_REQUEST)
+
+		date = dt.datetime.strptime(date, "%Y-%m-%d").strftime('%Y-%m-%d')
 
 		# check description is not empty
 		if not description:
@@ -58,24 +61,32 @@ class SubmitIncome(APIView):
 			}
 			return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
+		if not category:
+			category = IncomeCategory.other.value
+
+		if category in IncomeCategory._value2member_map_:
+			category = category
+		else:
+			category = IncomeCategory.other.value
 		# create object
-		create_expense = Wallet(
+		create_Income = Income(
 			user=request.user,
 			amount=amount,
 			date=date,
 			description=description,
-			type=RequestType.income.value,
+			category=category,
 		)
 
-		create_expense.save()
+		create_Income.save()
 
 		content = {
 			'status': 'success',
 			'result': {
-				'user': f'{create_expense.user.username}',
-				'type': f'{create_expense.type}',
-				'amount': f'{create_expense.amount}',
-				'description': f'{create_expense.description}',
+				'user': f'{create_Income.user.username}',
+				'category': f'{create_Income.category}',
+				'amount': f'{create_Income.amount}',
+				'description': f'{create_Income.description}',
+				'date': f'{gregorian_to_jalali(create_Income.date)}'
 			}
 		}
 		return Response(content, status=status.HTTP_201_CREATED)
@@ -88,7 +99,7 @@ class SubmitExpense(APIView):
 		amount = None if not request.POST.get('amount') else request.POST.get('amount')
 		description = None if not request.POST.get('description') else request.POST.get('description')
 		date = None if not request.POST.get('date') else request.POST.get('date')
-
+		category = None if not request.POST.get('category') else request.POST.get('category')
 		# check amount is not empty
 		if not amount:
 			content = {
@@ -103,18 +114,19 @@ class SubmitExpense(APIView):
 		if not date:
 			date = str(dt.datetime.now().date())  # if date is empty its set to today
 
-		# validate date value
-		try:
-			dt.datetime.strptime(date, "%Y-%m-%d").strftime('%Y-%m-%d')
-		except ValueError:
-			content = {
-				'status': 'error',
-				'detail': {
-					'message': 'Date must be in format : yyyy-mm-dd'
+		else:
+			try:
+				date = jalali_to_gregorian(date)
+			except ValueError:
+				content = {
+					'status': 'error',
+					'detail': {
+						'message': 'Date must be in format : yyyy-mm-dd'
+					}
 				}
-			}
-			return Response(content, status=status.HTTP_400_BAD_REQUEST)
+				return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
+		date = dt.datetime.strptime(date, "%Y-%m-%d").strftime('%Y-%m-%d')
 		# check description is not empty
 		if not description:
 			description = 'expense'  # set default to description
@@ -131,13 +143,21 @@ class SubmitExpense(APIView):
 			}
 			return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
+		if not category:
+			category = IncomeCategory.other.value
+
+		if category in ExpenseCategory._value2member_map_:
+			category = category
+		else:
+			category = IncomeCategory.other.value
+
 		# create object
-		create_expense = Wallet(
+		create_expense = Expense(
 			user=request.user,
 			amount=amount,
 			date=date,
 			description=description,
-			type=RequestType.expense.value,
+			category=category,
 		)
 
 		create_expense.save()
@@ -146,9 +166,10 @@ class SubmitExpense(APIView):
 			'status': 'success',
 			'result': {
 				'user': f'{create_expense.user.username}',
-				'type': f'{create_expense.type}',
+				'category': f'{create_expense.category}',
 				'amount': f'{create_expense.amount}',
 				'description': f'{create_expense.description}',
+				'date': f'{gregorian_to_jalali(create_expense.date)}'
 			}
 		}
 		return Response(content, status=status.HTTP_201_CREATED)
