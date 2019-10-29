@@ -6,11 +6,13 @@ from rest_framework.authtoken.models import Token
 from .models import CustomUser
 
 
-# Create your views here.
+
 
 
 class UserRegisteration(APIView):
-	# permission_classes = (IsAuthenticated,) # uncomment this when you need authentication
+	"""
+	user register
+	"""
 	permission_classes = ()
 
 	def post(self, request):
@@ -28,14 +30,14 @@ class UserRegisteration(APIView):
 			}
 			return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
-		if len(username) < 4:
+		if len(username) < 5:
 			content = {
 				'status': 'error',
 				'detail': {
 					'message': 'Username must be 6 character or more .'
 				}
 			}
-			return Response(content, status=status.H)
+			return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
 		if CustomUser.objects.filter(username=username).exists():
 			content = {
