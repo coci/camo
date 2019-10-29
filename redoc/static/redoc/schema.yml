@@ -1,0 +1,297 @@
+openapi: 3.0.1
+info:
+  title: Camo API documentaion
+  description: |
+    This is the documentaion camo API . this application work with token base authentication .
+  version: 1.0.0
+#externalDocs:
+#  description: Find out more about DRF Tutorial.
+#  url: https://www.django-rest-framework.org/tutorial/1-serialization/
+tags:
+  - name: user
+    description: All think about user like ( register , login , update etc.)
+  - name: submit
+    description: its about submit income and expense
+servers:
+  - url: 'https://127.0.0.1:8000/'
+paths:
+  api/v1/user/register:
+    post:
+      tags:
+        - user
+      summary: Register user
+      requestBody:
+        description: get user token to login .
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/register'
+            example:
+              username: example@example.com
+              passowrd: blahblah
+              first_name: john
+              last_name: doe
+      responses:
+        '201':
+          description: user sucessfully registred .
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/register/201'
+              example:
+                id: "1"
+                username: example@example.com
+                fullname: john doe
+                token: f429b7408bce9223746378929fab
+        '400':
+            description: its return all error case with information
+
+ ######
+  /api/v1/token/:
+    post:
+      tags:
+        - user
+      summary: Get user token
+      requestBody:
+        description: Doesn't need token in header .
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/token'
+            example:
+              username: example@example.com
+              password: blahblah
+      responses:
+        '200':
+          description: token key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/token/200'
+              example:
+                token : f429b7408bce9223746378929fab
+
+  ######
+  api/v1/wallet/income/:
+    post:
+      tags:
+        - submit
+      summary: submit income
+      requestBody:
+        description: You must pass token in header .
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/submit/income'
+            example:
+              amount: 20000
+              description: buy new car
+              date: "2019-01-02"
+              category: transportation
+      responses:
+        '201':
+          description: income sucessfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/submit/income/201'
+              example:
+                user: example@example.com
+                category: transportation
+                amount: 20000
+                description: buy new car
+                date: "2019-01-02"
+        '400':
+          description: its return all error case with information
+      security:
+        - Token: ""
+  api/v1/wallet/expense/:
+    post:
+      tags:
+        - submit
+      summary: submit expense
+      requestBody:
+        description: You must pass token in header .
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/submit/expense'
+            example:
+              amount: 20000
+              description: buy new car
+              date: "2019-01-02"
+              category: transportation
+      responses:
+        '201':
+          description: expense sucessfully created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/responses/submit/expense/201'
+              example:
+                user: example@example.com
+                category: transportation
+                amount: 20000
+                description: buy new car
+                date: "2019-01-02"
+        '400':
+          description: its return all error case with information
+      security:
+        - Token: ""
+
+
+# component section
+components:
+  schemas:
+    submit:
+      income:
+        required:
+        - amount
+        type: object
+        properties:
+          amount:
+            type: string
+            description: ""
+          description:
+            type: string
+            description: if it send empty system set income to description field
+          date:
+            type: string
+            description: in format yyyy-mm-dd, if it send empty system set today date to date field
+            format: string
+          catergory:
+            type: string
+            description : if it send empty system set other to category field
+      expense:
+        required:
+          - amount
+        type: object
+        properties:
+          amount:
+            type: string
+            description: ""
+          description:
+            type: string
+            description: if it send empty system set expense to description field
+          date:
+            type: string
+            description: in format yyyy-mm-dd, if it send empty system set today date to date field
+            format: string
+          catergory:
+            type: string
+            description: if it send empty system set other to category field
+
+    token:
+      required:
+      - username
+      - password
+      type: object
+      properties:
+        username:
+          type: string
+          description: ""
+        password:
+          type: string
+          description: ""
+    register:
+      required:
+      - username
+      - password
+      - first_name
+      - last_name
+      properties:
+        username:
+          type: string
+          description: "Username must be 6 character"
+        password:
+          type: string
+          description: "Password must be 6 character"
+        first_name:
+          type: string
+          description: ""
+        last_name:
+          type: string
+          description: ""
+  responses:
+    # token
+    token:
+      200:
+        type: object
+        properties:
+          token:
+            type: string
+            description: token key
+
+     # register
+    register:
+      201:
+        type: object
+        properties:
+          id:
+            type: string
+            description: user id
+          username:
+            type: string
+            description: username
+          fullname:
+            type: string
+            description: full name
+          token:
+            type: string
+            description: token key
+    submit:
+      income:
+        201:
+          type: object
+          properties:
+            user:
+              type: string
+              description: username
+            category:
+              type: string
+              description: category of income
+            amount:
+              type: string
+              description: amount of income
+            description:
+              type: string
+              description: description of income
+            date:
+              type: string
+              description: date of income
+      expense:
+        201:
+          type: object
+          properties:
+            user:
+              type: string
+              description: username
+            category:
+              type: string
+              description: category of expense
+            amount:
+              type: string
+              description: amount of expense
+            description:
+              type: string
+              description: description of expense
+            date:
+              type: string
+              description: date of expense
+
+
+  securitySchemes:
+    Token:
+      type: apiKey
+      description: |-
+        For authorization you must use Token in header
+
+
+         structure : (Token f429b7408bce9223746378929fab)
+
+      name: Authorization
+      in: header
