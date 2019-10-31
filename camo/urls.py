@@ -16,13 +16,11 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework.authtoken import views
 from django.views.generic import TemplateView
 
 urlpatterns = [
 	path('admin/', admin.site.urls),
 	path('api/v1/user/', include('users.urls')),
-	path('api/v1/token/', views.obtain_auth_token),  # user can obtain token by giving username and pass
 	path('api/v1/wallet/', include('wallet.urls')),
 	path('api/v1/report/', include('report.urls')),
 
