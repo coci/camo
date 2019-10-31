@@ -48,7 +48,7 @@ paths:
             description: its return all error case with information
 
  ######
-  /api/v1/token/:
+  /api/v1/user/token/:
     post:
       tags:
         - user
