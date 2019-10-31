@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from wallet.models import Income, Expense
-from camo.date import gregorian_to_jalali
+from date.date import gregorian_to_jalali
 
 
 class IncomeSerializer(serializers.ModelSerializer):

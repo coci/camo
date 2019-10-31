@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from .models import Income, IncomeCategory, ExpenseCategory, Expense
-from camo.date import gregorian_to_jalali, jalali_to_gregorian
+from date.date import gregorian_to_jalali, jalali_to_gregorian
 
 
 class SubmitIncome(APIView):
