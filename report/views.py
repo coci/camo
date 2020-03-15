@@ -12,13 +12,16 @@ from django.db.models import Q
 from .serializers import IncomeSerializer
 
 
-class IncomeReport(APIView):
+class IncomeList(APIView):
 	permission_classes = (IsAuthenticated,)
 
 	def get(self, request):
-		from_date = request.POST.get('from_date') if request.POST.get('from_date') else None
-		to_date = request.POST.get('to_date') if request.POST.get('to_date') else None
 
+		print(request.GET)
+		from_date = None if not request.GET.get('from_date') else request.GET.get('from_date')
+		to_date = None if not request.GET.get('to_date') else request.GET.get('to_date')
+		print(from_date)
+		print(to_date)
 		if not from_date:
 			from_date = datetime.datetime.now()
 		else:
@@ -28,7 +31,7 @@ class IncomeReport(APIView):
 				content = {
 					'status': 'error',
 					'detail': {
-						'message': 'Date must be in format : yyyy-mm-dd'
+						'message': 'from_date must be in format : yyyy-mm-dd'
 					}
 				}
 				return Response(content, status=status.HTTP_400_BAD_REQUEST)
@@ -42,21 +45,32 @@ class IncomeReport(APIView):
 				content = {
 					'status': 'error',
 					'detail': {
-						'message': 'Date must be in format : yyyy-mm-dd'
+						'message': 'to_date must be in format : yyyy-mm-dd'
 					}
 				}
 				return Response(content, status=status.HTTP_400_BAD_REQUEST)
 
+		print(from_date)
+		print(to_date)
 		income = Income.objects.filter(user=request.user)
 		income = income.filter(
 			Q(date__range=(from_date, to_date))
 		)
+		if income.exists():
+			income = IncomeSerializer(income, many=True)
 
-		income = IncomeSerializer(income, many=True)
+			counter = 0
+			for i in income.data:
+				income.data[counter]['date'] = gregorian_to_jalali(i['date'])
+				counter += 1
 
-		counter = 0
-		for i in income.data:
-			income.data[counter]['date'] = gregorian_to_jalali(i['date'])
-			counter += 1
+			return Response(income.data, status=status.HTTP_200_OK)
+		else:
 
-		return Response(income.data, status=status.HTTP_200_OK)
+			content = {
+				'status': 'success',
+				'detail': {
+					'message': 'there is no income in this time range .'
+				}
+			}
+			return Response(content, status=status.HTTP_200_OK)

@@ -1,8 +1,8 @@
 openapi: 3.0.1
 info:
-  title: Camo API documentaion
+  title: Sharif Back-end API documentaion
   description: |
-    This is the documentaion camo API . this application work with token base authentication .
+    This is Sharif API documentaion .
   version: 1.0.0
 #externalDocs:
 #  description: Find out more about DRF Tutorial.
@@ -15,7 +15,7 @@ tags:
 servers:
   - url: 'https://127.0.0.1:8000/'
 paths:
-  api/v1/user/register:
+  /api/v1/customer/register:
     post:
       tags:
         - user
